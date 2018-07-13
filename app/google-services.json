@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "515247435417",
+    "firebase_url": "https://chat-8097e.firebaseio.com",
+    "project_id": "chat-8097e",
+    "storage_bucket": "chat-8097e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:515247435417:android:691794e2a4ee5b44",
+        "android_client_info": {
+          "package_name": "com.example.adityarajguru.chat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "515247435417-3d8993qlsdbjvnhvv7qhi42k8sqo81pd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjwgs5jAL59DnlFnLB07BYkGFksatsP70"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
