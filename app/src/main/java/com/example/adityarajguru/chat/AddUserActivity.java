@@ -62,7 +62,7 @@ public class AddUserActivity extends AppCompatActivity {
                     @Override
                     public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
                     selected[0] = (String)adapterView.getItemAtPosition(position);
-                    Toast.makeText(getApplicationContext(),"Selected : "+ selected[0],Toast.LENGTH_LONG).show();
+                    //Toast.makeText(getApplicationContext(),"Selected : "+ selected[0],Toast.LENGTH_LONG).show();
                          Intent intent = new Intent(AddUserActivity.this,ChatActivity.class);
                         intent.putExtra("Email", selected[0]);
                         startActivity(intent);
