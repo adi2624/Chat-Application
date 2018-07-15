@@ -133,30 +133,53 @@ public class ChatActivity extends AppCompatActivity {
 
     private void CreateInstance(String email,String messagetext,String id)
     {
-        //---------------THIS IS THE PROBLEM. UNTIL A VALUE IS SET, NO DATABASE ENTRY IS CREATED AND HENCE CHECKTHREAD DOESNT WORK-----------
         ref3.child(id).child("members").child("receiver").setValue(email);
         ref3.child(id).child("members").child("sender").setValue(current_user);
         ref4.child(id).child("sender").push().setValue(current_user);
         String mydate = java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-        ref4.child(id).child("msg").push().setValue(messagetext);
-        ref4.child(id).child("time").push().setValue(mydate);
-        DatabaseReference listen = ref2.child("messages").child(id).child("msg");
-        ValueEventListener valueEventListener = new ValueEventListener() {
+        DatabaseReference listen = ref4.child(id).child("msg");
+        Log.e("ID: ","id: "+id );
+        listen.addChildEventListener(new ChildEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds: dataSnapshot.getChildren())
-                {
-                   list.add(ds.getValue().toString());
-                }
-                lv.setAdapter(new ArrayAdapter<String>(ChatActivity.this,
-                        android.R.layout.simple_list_item_1,list));
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Log.d("TAG", "onChildAdded:" + dataSnapshot.getValue());
+                    list.add(dataSnapshot.getValue().toString());
+
+                lv.setAdapter(new ArrayAdapter<String>(ChatActivity.this,android.R.layout.simple_list_item_1,list));
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        };
-        listen.addListenerForSingleValueEvent(valueEventListener);
+        });
+        //---------------THIS IS THE PROBLEM. UNTIL A VALUE IS SET, NO DATABASE ENTRY IS CREATED AND HENCE CHECKTHREAD DOESNT WORK-----------
+
+        ref4.child(id).child("msg").push().setValue(messagetext);
+        ref4.child(id).child("time").push().setValue(mydate);
+
+
+
     };
+
+    private void updateUI()
+    {
+
+    }
+
 }
