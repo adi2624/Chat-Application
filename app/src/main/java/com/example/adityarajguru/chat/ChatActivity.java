@@ -133,6 +133,7 @@ public class ChatActivity extends AppCompatActivity {
 
     private void CreateInstance(String email,String messagetext,String id)
     {
+        //---------------THIS IS THE PROBLEM. UNTIL A VALUE IS SET, NO DATABASE ENTRY IS CREATED AND HENCE CHECKTHREAD DOESNT WORK-----------
         ref3.child(id).child("members").child("receiver").setValue(email);
         ref3.child(id).child("members").child("sender").setValue(current_user);
         ref4.child(id).child("sender").push().setValue(current_user);
