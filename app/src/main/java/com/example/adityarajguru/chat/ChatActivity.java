@@ -36,11 +36,11 @@ import java.util.Random;
 
 public class ChatActivity extends AppCompatActivity {
 
-    DatabaseReference ref3;
-    DatabaseReference ref4;
-    DatabaseReference ref2;
-    DatabaseReference listen;
-    String id="100";
+    public DatabaseReference ref3;
+    public DatabaseReference ref4;
+    public DatabaseReference ref2;
+    public DatabaseReference listen;
+    String id="";
     Button send;
     int i=0;
     private List<String> list = new ArrayList<>();
@@ -54,18 +54,104 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        current_user="";
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if(user!=null)
+        {
+            current_user = user.getEmail();
+        }
+        Intent myIntent = getIntent();
+        email = myIntent.getStringExtra("Email");
         ref2 = FirebaseDatabase.getInstance().getReference();
-        ref3 = ref2.child("threads");
-        ref4 = FirebaseDatabase.getInstance().getReference("messages");
-        CheckThread();
-        listen = ref4.child(id).child("msg");
+        ref3 = FirebaseDatabase.getInstance().getReference().child("threads");
+        ref4 = FirebaseDatabase.getInstance().getReference().child("messages");
+        ref3.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds: dataSnapshot.getChildren())
+                {
+                    Log.e("KEY RECEIVER : ",ds.child("members").child("receiver").getValue().toString());
+                    Log.e("KEY SENDER : ",ds.child("members").child("sender").getValue().toString());
+                    if(email.equals(ds.child("members").child("receiver").getValue().toString()) && current_user.equals(ds.child("members").child("sender").getValue().toString()))
+                    {
+                        id = ds.getKey();
+                        break;
+                    }
+                    else if(email.equals(ds.child("members").child("sender").getValue().toString()) && current_user.equals(ds.child("members").child("receiver").getValue().toString()))
+                    {
+                        id=ds.getKey();
+                        break;
+                    }
+
+                }
+                if(id=="")
+                {
+                    Random r = new Random();
+                    int Low=1080;
+                    int High=1920;
+                    int Result = r.nextInt(High-Low)+Low;
+                    id = Result+"";
+
+                }
+                listen = ref4.child(id).child("msg");
+                updateUI();
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
+
+        lv =(ListView)findViewById(R.id.list);
+   //     Toast.makeText(getApplicationContext(),"Selected : "+ email,Toast.LENGTH_LONG).show();
+        send=(Button)findViewById(R.id.button);
+        text_object = (TextInputEditText)findViewById(R.id.text);
+        // Use this : ref3.addChildEventListener()
+        send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String messagetext =text_object.getText().toString();
+                Toast.makeText(getApplicationContext(),"Sent : "+ messagetext,Toast.LENGTH_LONG).show();
+                Log.e("ID :",id+"");
+                CreateInstance(email,messagetext,id);
+
+
+            }
+        });
+
+
+
+    }
+
+    private void CreateInstance(String email,String messagetext,String id)
+    {
         Log.e("ON CREATE WITH ID :",id+"");
-        listen.addChildEventListener(new ChildEventListener() {
+
+        ref3.child(id).child("members").child("receiver").setValue(email);
+        ref3.child(id).child("members").child("sender").setValue(current_user);
+        ref4.child(id).child("sender").push().setValue(current_user);
+        String mydate = java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
+        //---------------THIS IS THE PROBLEM. UNTIL A VALUE IS SET, NO DATABASE ENTRY IS CREATED AND HENCE CHECKTHREAD DOESNT WORK-----------
+        ref4.child(id).child("msg").push().setValue(messagetext);
+        ref4.child(id).child("time").push().setValue(mydate);
+
+        //listen.removeEventListener(child_listen);
+
+
+
+    };
+
+    private void updateUI()
+    {
+        ChildEventListener child_listen = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
 
                 list.add(dataSnapshot.getValue().toString());
-                //Log.e("LIST:",list.toString());
+                Log.e("LIST:",list.toString());
                 //i++;
 
                 lv.setAdapter(new ArrayAdapter<String>(ChatActivity.this,android.R.layout.simple_list_item_1,list));
@@ -90,96 +176,8 @@ public class ChatActivity extends AppCompatActivity {
             public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
-        });
-        lv =(ListView)findViewById(R.id.list);
-        Intent myIntent = getIntent();
-        email = myIntent.getStringExtra("Email");
-   //     Toast.makeText(getApplicationContext(),"Selected : "+ email,Toast.LENGTH_LONG).show();
-        current_user="";
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if(user!=null)
-        {
-            current_user = user.getEmail();
-        }
-
-
-        send=(Button)findViewById(R.id.button);
-        text_object = (TextInputEditText)findViewById(R.id.text);
-        // Use this : ref3.addChildEventListener()
-        send.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String messagetext =text_object.getText().toString();
-                Toast.makeText(getApplicationContext(),"Sent : "+ messagetext,Toast.LENGTH_LONG).show();
-                Log.e("ID :",id+"");
-                CreateInstance(email,messagetext,id);
-
-
-            }
-        });
-
-
-
-
-
-
-
-    }
-    private void CheckThread()
-    {
-        ref3.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int i=0;
-                for(DataSnapshot ds: dataSnapshot.getChildren())
-                {
-                    String sender = ds.child("members").child("sender").getValue().toString();
-                    String receiver = ds.child("members").child("receiver").getValue().toString();
-
-                    Log.e("TAG","Sender: "+sender + "Receiver"+receiver);
-                    if(current_user.equals(sender) && receiver.equals(email))
-                    {
-                        id = ds.getKey();
-                        Toast.makeText(getApplicationContext()," OLD THREAD RESUMED with ID: "+id,Toast.LENGTH_LONG).show();
-                        break;
-                    }
-                    else
-                    {
-                        Random r = new Random();
-                        int Low=1080;
-                        int High=1920;
-                        int Result = r.nextInt(High-Low)+Low;
-                        id = Result+"";
-                        // Toast.makeText(getApplicationContext()," NEW THREAD RESUMED",Toast.LENGTH_LONG).show();
-                    }
-
-                }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-    private void CreateInstance(String email,String messagetext,String id)
-    {
-        ref3.child(id).child("members").child("receiver").setValue(email);
-        ref3.child(id).child("members").child("sender").setValue(current_user);
-        ref4.child(id).child("sender").push().setValue(current_user);
-        String mydate = java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-        //---------------THIS IS THE PROBLEM. UNTIL A VALUE IS SET, NO DATABASE ENTRY IS CREATED AND HENCE CHECKTHREAD DOESNT WORK-----------
-        ref4.child(id).child("msg").push().setValue(messagetext);
-        ref4.child(id).child("time").push().setValue(mydate);
-
-
-
-    };
-
-    private void updateUI()
-    {
-
+        };
+        listen.addChildEventListener(child_listen);
     }
 
 }
