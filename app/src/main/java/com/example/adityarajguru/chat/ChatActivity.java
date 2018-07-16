@@ -39,17 +39,16 @@ public class ChatActivity extends AppCompatActivity {
     DatabaseReference ref3;
     DatabaseReference ref4;
     DatabaseReference ref2;
+    DatabaseReference listen;
     String id="100";
     Button send;
-    private final List<String> list = new ArrayList<>();
-    List<String> debug = new ArrayList<>();
+    int i=0;
+    private List<String> list = new ArrayList<>();
     ListView lv;
-    String ListArray[]={};
     TextInputEditText text_object;
     LinearLayout layout;
     String current_user;
     String email;
-    private TextView textView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +57,41 @@ public class ChatActivity extends AppCompatActivity {
         ref2 = FirebaseDatabase.getInstance().getReference();
         ref3 = ref2.child("threads");
         ref4 = FirebaseDatabase.getInstance().getReference("messages");
+        CheckThread();
+        listen = ref4.child(id).child("msg");
+        Log.e("ON CREATE WITH ID :",id+"");
+        listen.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+                list.add(dataSnapshot.getValue().toString());
+                //Log.e("LIST:",list.toString());
+                //i++;
+
+                lv.setAdapter(new ArrayAdapter<String>(ChatActivity.this,android.R.layout.simple_list_item_1,list));
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
         lv =(ListView)findViewById(R.id.list);
-        textView = (TextView)findViewById(R.id.test);
         Intent myIntent = getIntent();
         email = myIntent.getStringExtra("Email");
    //     Toast.makeText(getApplicationContext(),"Selected : "+ email,Toast.LENGTH_LONG).show();
@@ -69,10 +101,9 @@ public class ChatActivity extends AppCompatActivity {
         {
             current_user = user.getEmail();
         }
-        CheckThread();
+
 
         send=(Button)findViewById(R.id.button);
-        Toast.makeText(getApplicationContext(),"Size: "+ debug.size(),Toast.LENGTH_LONG).show();
         text_object = (TextInputEditText)findViewById(R.id.text);
         // Use this : ref3.addChildEventListener()
         send.setOnClickListener(new View.OnClickListener() {
@@ -80,6 +111,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View view) {
                 String messagetext =text_object.getText().toString();
                 Toast.makeText(getApplicationContext(),"Sent : "+ messagetext,Toast.LENGTH_LONG).show();
+                Log.e("ID :",id+"");
                 CreateInstance(email,messagetext,id);
 
 
@@ -137,39 +169,7 @@ public class ChatActivity extends AppCompatActivity {
         ref3.child(id).child("members").child("sender").setValue(current_user);
         ref4.child(id).child("sender").push().setValue(current_user);
         String mydate = java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-        DatabaseReference listen = ref4.child(id).child("msg");
-        Log.e("ID: ","id: "+id );
-        listen.addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                Log.d("TAG", "onChildAdded:" + dataSnapshot.getValue());
-                    list.add(dataSnapshot.getValue().toString());
-
-                lv.setAdapter(new ArrayAdapter<String>(ChatActivity.this,android.R.layout.simple_list_item_1,list));
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
         //---------------THIS IS THE PROBLEM. UNTIL A VALUE IS SET, NO DATABASE ENTRY IS CREATED AND HENCE CHECKTHREAD DOESNT WORK-----------
-
         ref4.child(id).child("msg").push().setValue(messagetext);
         ref4.child(id).child("time").push().setValue(mydate);
 
