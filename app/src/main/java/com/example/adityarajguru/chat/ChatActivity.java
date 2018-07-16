@@ -94,7 +94,7 @@ public class ChatActivity extends AppCompatActivity {
 
                 }
                 listen = ref4.child(id).child("msg");
-                updateUI();
+                attachListener();
 
             }
 
@@ -144,7 +144,7 @@ public class ChatActivity extends AppCompatActivity {
 
     };
 
-    private void updateUI()
+    private void attachListener()
     {
         ChildEventListener child_listen = new ChildEventListener() {
             @Override

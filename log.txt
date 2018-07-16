@@ -1,0 +1,3 @@
+issue 1: break not present in the function which checks for current user. Resulted in wrong ID numbers being sent and repeated threads for the same members.
+issue 2: OnCreate does not run in order, because firebase OnDataChange in ValueEventListener is asynchronous, put the line needing id inside OnDataChange.
+
