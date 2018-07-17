@@ -12,8 +12,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,15 +42,20 @@ public class ChatActivity extends AppCompatActivity {
     public DatabaseReference ref4;
     public DatabaseReference ref2;
     public DatabaseReference listen;
+    public DatabaseReference sender;
     String id="";
-    Button send;
     int i=0;
     private List<String> list = new ArrayList<>();
-    ListView lv;
-    TextInputEditText text_object;
-    LinearLayout layout;
+    private List<String> is_sender = new ArrayList<>();
     String current_user;
     String email;
+    private EditText messageET;
+    private ListView messagesContainer;
+    private Button sendBtn;
+    private ChatAdapter adapter;
+    private ArrayList<ChatMessage> chatHistory;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +69,13 @@ public class ChatActivity extends AppCompatActivity {
         }
         Intent myIntent = getIntent();
         email = myIntent.getStringExtra("Email");
+        messagesContainer=(ListView)findViewById(R.id.messagesContainer);
+        messageET=(EditText)findViewById(R.id.messageEdit);
+        sendBtn=(Button)findViewById(R.id.chatSendButton);
+        TextView meLabel = (TextView)findViewById(R.id.meLbl);
+        TextView companionlabel = (TextView)findViewById(R.id.friendLabel);
+        RelativeLayout container = (RelativeLayout) findViewById(R.id.container);
+        companionlabel.setText(email);
         ref2 = FirebaseDatabase.getInstance().getReference();
         ref3 = FirebaseDatabase.getInstance().getReference().child("threads");
         ref4 = FirebaseDatabase.getInstance().getReference().child("messages");
@@ -93,7 +107,9 @@ public class ChatActivity extends AppCompatActivity {
                     id = Result+"";
 
                 }
+                sender=ref4.child(id).child("sender");
                 listen = ref4.child(id).child("msg");
+                CheckSender();
                 attachListener();
 
             }
@@ -105,15 +121,15 @@ public class ChatActivity extends AppCompatActivity {
         });
 
 
-        lv =(ListView)findViewById(R.id.list);
+
    //     Toast.makeText(getApplicationContext(),"Selected : "+ email,Toast.LENGTH_LONG).show();
-        send=(Button)findViewById(R.id.button);
-        text_object = (TextInputEditText)findViewById(R.id.text);
+
+
         // Use this : ref3.addChildEventListener()
-        send.setOnClickListener(new View.OnClickListener() {
+        sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String messagetext =text_object.getText().toString();
+                String messagetext =messageET.getText().toString();
                 Toast.makeText(getApplicationContext(),"Sent : "+ messagetext,Toast.LENGTH_LONG).show();
                 Log.e("ID :",id+"");
                 CreateInstance(email,messagetext,id);
@@ -153,8 +169,30 @@ public class ChatActivity extends AppCompatActivity {
                 list.add(dataSnapshot.getValue().toString());
                 Log.e("LIST:",list.toString());
                 //i++;
+                chatHistory=new ArrayList<ChatMessage>();
+                for(int i=0;i<list.size();i++)
+                {
+                    ChatMessage msg = new ChatMessage();
+                    msg.setMessage(list.get(i));
+                   if(is_sender.get(i).equals(current_user))
+                    {
+                        msg.setMe(true);
+                    }
+                    else
+                    {
+                        msg.setMe(false);
+                    }
 
-                lv.setAdapter(new ArrayAdapter<String>(ChatActivity.this,android.R.layout.simple_list_item_1,list));
+                    chatHistory.add(msg);
+                }
+                adapter = new ChatAdapter(ChatActivity.this,new ArrayList<ChatMessage>());
+                messagesContainer.setAdapter(adapter);
+                for(int i=0;i<chatHistory.size();i++)
+                {
+                    ChatMessage message = chatHistory.get(i);
+                    displayMessage(message);
+
+                }
             }
 
             @Override
@@ -179,5 +217,46 @@ public class ChatActivity extends AppCompatActivity {
         };
         listen.addChildEventListener(child_listen);
     }
+    public void displayMessage(ChatMessage message) {
+        adapter.add(message);
+        adapter.notifyDataSetChanged();
+        scroll();
+    }
+
+    private void scroll() {
+        messagesContainer.setSelection(messagesContainer.getCount() - 1);
+    }
+    private void CheckSender()
+    {
+        ChildEventListener child_listen = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                is_sender.add(dataSnapshot.getValue().toString());
+                Log.e("Senders : ",list.toString());
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        sender.addChildEventListener(child_listen);
+    }
+
 
 }
