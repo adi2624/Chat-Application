@@ -90,6 +90,7 @@ public class ChatActivity extends AppCompatActivity {
                 {
                     Log.e("KEY RECEIVER : ",ds.child("members").child("receiver").getValue().toString());
                     Log.e("KEY SENDER : ",ds.child("members").child("sender").getValue().toString());
+
                     if(email.equals(ds.child("members").child("receiver").getValue().toString()) && current_user.equals(ds.child("members").child("sender").getValue().toString()))
                     {
                         id = ds.getKey();
@@ -111,6 +112,8 @@ public class ChatActivity extends AppCompatActivity {
                     id = Result+"";
 
                 }
+                ref3.child(id).child("members").child("receiver").setValue(email);
+                ref3.child(id).child("members").child("sender").setValue(current_user);
                 sender=ref4.child(id).child("sender");
                 listen = ref4.child(id).child("msg");
                 time = ref4.child(id).child("time");
@@ -146,8 +149,7 @@ public class ChatActivity extends AppCompatActivity {
     {
         Log.e("ON CREATE WITH ID :",id+"");
 
-        ref3.child(id).child("members").child("receiver").setValue(email);
-        ref3.child(id).child("members").child("sender").setValue(current_user);
+
         ref4.child(id).child("sender").push().setValue(current_user);
         String mydate = java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
         ref4.child(id).child("time").push().setValue(mydate);   //PUSHED FIRST DUE TO LISTENER CONFLICTS
@@ -168,7 +170,6 @@ public class ChatActivity extends AppCompatActivity {
                 for(int i=0;i<list.size();i++)
                 {
                     ChatMessage msg = new ChatMessage();
-                    msg.setMessage(list.get(i));
                    if(is_sender.get(i).equals(current_user))
                     {
                         msg.setMe(true);
@@ -177,6 +178,9 @@ public class ChatActivity extends AppCompatActivity {
                     {
                         msg.setMe(false);
                     }
+                    String temp_message = is_sender.get(i)+"\n";
+                   temp_message=temp_message+list.get(i);
+                    msg.setMessage(temp_message);
                     msg.setSender(is_sender.get(i));
                     msg.setDate(time_list.get(i));
 
