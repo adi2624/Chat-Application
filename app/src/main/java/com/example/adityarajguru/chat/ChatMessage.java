@@ -4,7 +4,18 @@ public class ChatMessage {
     private String message;
     private boolean isMe;
     private String dateTime;
+    private String sender;
 
+
+    public void setSender(String to_send)
+    {
+        sender=to_send;
+    }
+
+    public String getSender()
+    {
+        return sender;
+    }
 
     public boolean getIsme() {
         return isMe;

@@ -43,10 +43,14 @@ public class ChatActivity extends AppCompatActivity {
     public DatabaseReference ref2;
     public DatabaseReference listen;
     public DatabaseReference sender;
+    public DatabaseReference time;
+
+
     String id="";
     int i=0;
     private List<String> list = new ArrayList<>();
     private List<String> is_sender = new ArrayList<>();
+    private List<String> time_list = new ArrayList<>();
     String current_user;
     String email;
     private EditText messageET;
@@ -109,7 +113,9 @@ public class ChatActivity extends AppCompatActivity {
                 }
                 sender=ref4.child(id).child("sender");
                 listen = ref4.child(id).child("msg");
+                time = ref4.child(id).child("time");
                 CheckSender();
+                addtime();
                 attachListener();
 
             }
@@ -120,12 +126,6 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
-
-
-   //     Toast.makeText(getApplicationContext(),"Selected : "+ email,Toast.LENGTH_LONG).show();
-
-
-        // Use this : ref3.addChildEventListener()
         sendBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -150,18 +150,13 @@ public class ChatActivity extends AppCompatActivity {
         ref3.child(id).child("members").child("sender").setValue(current_user);
         ref4.child(id).child("sender").push().setValue(current_user);
         String mydate = java.text.DateFormat.getDateTimeInstance().format(Calendar.getInstance().getTime());
-        //---------------THIS IS THE PROBLEM. UNTIL A VALUE IS SET, NO DATABASE ENTRY IS CREATED AND HENCE CHECKTHREAD DOESNT WORK-----------
+        ref4.child(id).child("time").push().setValue(mydate);   //PUSHED FIRST DUE TO LISTENER CONFLICTS
         ref4.child(id).child("msg").push().setValue(messagetext);
-        ref4.child(id).child("time").push().setValue(mydate);
-
-        //listen.removeEventListener(child_listen);
-
-
-
     };
 
     private void attachListener()
     {
+
         ChildEventListener child_listen = new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -182,6 +177,8 @@ public class ChatActivity extends AppCompatActivity {
                     {
                         msg.setMe(false);
                     }
+                    msg.setSender(is_sender.get(i));
+                    msg.setDate(time_list.get(i));
 
                     chatHistory.add(msg);
                 }
@@ -257,6 +254,40 @@ public class ChatActivity extends AppCompatActivity {
         };
         sender.addChildEventListener(child_listen);
     }
+
+    private void addtime()
+    {
+        ChildEventListener childEventListener = new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                Log.e("TIME: ",dataSnapshot.getValue().toString());
+                time_list.add(dataSnapshot.getValue().toString());
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        time.addChildEventListener(childEventListener);
+    }
+
 
 
 }

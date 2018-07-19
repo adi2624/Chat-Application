@@ -2,4 +2,4 @@ issue 1: break not present in the function which checks for current user. Result
 issue 2: OnCreate does not run in order, because firebase OnDataChange in ValueEventListener is asynchronous, put the line needing id inside OnDataChange.
 issue 3: If there are not threads present before, 2 threads are launched.
 issue 4: In reference to issue 3, if both activities are started and no messages have been sent on either of them, no threads are created, hence 2 different threads are created initially.
-
+issue 5: Was pushing message first, then time and added listeners on both of them. MessageListener had code which fetched time at the latest index, which hasn't been pushed yet, resulting in a index out of bounds error.
