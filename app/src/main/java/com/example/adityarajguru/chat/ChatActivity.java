@@ -94,11 +94,13 @@ public class ChatActivity extends AppCompatActivity {
                     if(email.equals(ds.child("members").child("receiver").getValue().toString()) && current_user.equals(ds.child("members").child("sender").getValue().toString()))
                     {
                         id = ds.getKey();
+                        Log.e("d","IAM IN");
                         break;
                     }
                     else if(email.equals(ds.child("members").child("sender").getValue().toString()) && current_user.equals(ds.child("members").child("receiver").getValue().toString()))
                     {
                         id=ds.getKey();
+                        Log.e("d","IAM IN");
                         break;
                     }
 

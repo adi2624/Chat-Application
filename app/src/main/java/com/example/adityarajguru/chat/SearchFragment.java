@@ -2,8 +2,8 @@ package com.example.adityarajguru.chat;
 
 import android.app.ListFragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,6 +31,7 @@ public class SearchFragment extends ListFragment implements SearchView.OnQueryTe
     List<String> mAllValues;
     private ArrayAdapter<String> mAdapter;
     private Context mContext;
+    private DatabaseReference ref;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,12 +45,10 @@ public class SearchFragment extends ListFragment implements SearchView.OnQueryTe
     @Override
     public void onListItemClick(ListView listView, View v, int position, long id) {
         String item = (String) listView.getAdapter().getItem(position);
-        Log.e("Item: ",item);
-        if (getActivity() instanceof OnItem1SelectedListener) {
-            ((OnItem1SelectedListener) getActivity()).OnItem1SelectedListener(item);
+        Intent intent = new Intent(getActivity(),ChatActivity.class);
+        intent.putExtra("Email", item);
+        startActivity(intent);
 
-        }
-        getFragmentManager().popBackStack();
     }
 
     @Override
@@ -62,7 +61,7 @@ public class SearchFragment extends ListFragment implements SearchView.OnQueryTe
         View layout = inflater.inflate(R.layout.search_fragment, container, false);
         ListView listView = (ListView) layout.findViewById(android.R.id.list);
         TextView emptyTextView = (TextView) layout.findViewById(android.R.id.empty);
-        //listView.setEmptyView(emptyTextView);
+        listView.setEmptyView(emptyTextView);
         return layout;
     }
 
@@ -124,22 +123,20 @@ public class SearchFragment extends ListFragment implements SearchView.OnQueryTe
     }
 
     private void populateList(){
-
         mAllValues = new ArrayList<>();
 
-        DatabaseReference populate = FirebaseDatabase.getInstance().getReference("username");
+        ref = FirebaseDatabase.getInstance().getReference("username");
         ValueEventListener valueEventListener = new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot ds: dataSnapshot.getChildren())
+            for(DataSnapshot ds: dataSnapshot.getChildren()){
+                for(DataSnapshot email: ds.getChildren())
                 {
-                    for(DataSnapshot email: ds.getChildren()) {
-                        Log.e("ADDED: ", email.getValue().toString());
-                        mAllValues.add(email.getValue().toString());
-                    }
+                    mAllValues.add(email.getValue().toString());
                 }
-
-                //mAllValues.add("india");
+            }
+                mAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_list_item_1, mAllValues);
+                setListAdapter(mAdapter);
             }
 
             @Override
@@ -147,8 +144,8 @@ public class SearchFragment extends ListFragment implements SearchView.OnQueryTe
 
             }
         };
-        populate.addListenerForSingleValueEvent(valueEventListener);
-        mAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_list_item_1, mAllValues);
-        setListAdapter(mAdapter);
+        ref.addListenerForSingleValueEvent(valueEventListener);
+
+
     }
 }
