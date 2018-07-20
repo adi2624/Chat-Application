@@ -130,7 +130,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private void updateUI(FirebaseUser currentUser) {
         if(currentUser!=null) {
             Log.e("Status", "Sign in Successful.");
-            Intent intent = new Intent(LoginActivity.this,MainActivity.class);
+            Intent intent = new Intent(LoginActivity.this,OldChatsActivity.class);
             startActivity(intent);
         }
         else
