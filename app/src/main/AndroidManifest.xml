@@ -21,9 +21,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity"  android:label="@string/title_activity_login">
-            <meta-data android:name="android.app.default_searchable"
-                android:value=".SearchActivity" />
+        <activity android:name=".MainActivity"  android:label="Mainctivity"
+           android:theme="@style/AppTheme.NoActionBar">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
 
         </activity>
         <activity
