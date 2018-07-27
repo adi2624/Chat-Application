@@ -130,10 +130,7 @@ public class SearchFragment extends ListFragment implements SearchView.OnQueryTe
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
             for(DataSnapshot ds: dataSnapshot.getChildren()){
-                for(DataSnapshot email: ds.getChildren())
-                {
-                    mAllValues.add(email.getValue().toString());
-                }
+                mAllValues.add(ds.child("email").getValue().toString());
             }
                 mAdapter = new ArrayAdapter<>(mContext, android.R.layout.simple_list_item_1, mAllValues);
                 setListAdapter(mAdapter);

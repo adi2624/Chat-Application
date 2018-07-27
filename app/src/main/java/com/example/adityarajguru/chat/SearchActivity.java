@@ -41,10 +41,10 @@ public class SearchActivity extends AppCompatActivity {
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     for(DataSnapshot ds : dataSnapshot.getChildren())
                     {
-                        for(DataSnapshot email: ds.getChildren()){
-                            usernames.add(email.getValue().toString());
-                            Log.e("VALUE: ",email.getValue().toString());
-                        }
+
+                            usernames.add(ds.child("email").getValue().toString());
+                            Log.e("VALUE: ",ds.child("email").getValue().toString());
+
                     }
                     for(int i=0;i<usernames.size();i++)
                     {

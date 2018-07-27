@@ -32,9 +32,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".AddUserActivity"
-            android:label="Add Users" />
-        <activity
             android:name=".ChatActivity"
             android:label="Chat Room" />
         <activity android:name=".SearchActivity">

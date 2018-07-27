@@ -1,11 +1,15 @@
 package com.example.adityarajguru.chat;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
@@ -44,6 +48,8 @@ public class ChatActivity extends AppCompatActivity {
     public DatabaseReference listen;
     public DatabaseReference sender;
     public DatabaseReference time;
+    public DatabaseReference username;
+    public DatabaseReference messages;
 
 
     String id="";
@@ -53,6 +59,7 @@ public class ChatActivity extends AppCompatActivity {
     private List<String> time_list = new ArrayList<>();
     String current_user;
     String email;
+    String m_Text;
     private EditText messageET;
     private ListView messagesContainer;
     private Button sendBtn;
@@ -60,6 +67,67 @@ public class ChatActivity extends AppCompatActivity {
     private ArrayList<ChatMessage> chatHistory;
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Rate the conversation from 1 to 5 and improve your feed.");
+
+// Set up the input
+        final EditText input = new EditText(this);
+// Specify the type of input expected; this, for example, sets the input as a password, and will mask the text
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        builder.setView(input);
+
+// Set up the buttons
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                 m_Text = input.getText().toString();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        username = FirebaseDatabase.getInstance().getReference("threads");
+        messages = FirebaseDatabase.getInstance().getReference("messages");
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot ds: dataSnapshot.getChildren())
+                {
+                    for(DataSnapshot thread: ds.getChildren())
+                    {
+                        if(thread.child("sender").getValue().equals(current_user) && thread.child("receiver").getValue().equals(email))
+                        {
+                            String key = ds.getKey();
+                            messages.child(key).child("rating").push().setValue(m_Text);
+                            //Log.e("KEY",key);
+                        }
+                    }
+                    //Log.e("DATA",ds.child("email").getValue().toString());
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        };
+        username.addListenerForSingleValueEvent(valueEventListener);
+       // username.child("rating").setValue("5");
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -293,6 +361,8 @@ public class ChatActivity extends AppCompatActivity {
         };
         time.addChildEventListener(childEventListener);
     }
+
+
 
 
 
