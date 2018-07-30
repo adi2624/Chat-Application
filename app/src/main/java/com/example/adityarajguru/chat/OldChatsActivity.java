@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -30,16 +31,26 @@ public class OldChatsActivity extends AppCompatActivity {
     private ListView lv;
     private DatabaseReference threads_reference;
     private DatabaseReference messages_reference;
+    private DatabaseReference ratings_reference;
     private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     private ArrayList<MessageThread> emails = new ArrayList<MessageThread>();
     private String temp_string;
     private String last_message;
+    private SwipeRefreshLayout refresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_old_chats);
         lv=findViewById(R.id.list);
+        refresh=(SwipeRefreshLayout)findViewById(R.id.activity_main_swipe_refresh_layout);
+        refresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                finish();
+                startActivity(getIntent());
+            }
+        });
         threads_reference=FirebaseDatabase.getInstance().getReference("threads");
 
         ValueEventListener valueEventListener = new ValueEventListener() {
@@ -48,6 +59,7 @@ public class OldChatsActivity extends AppCompatActivity {
                 for(DataSnapshot uid: dataSnapshot.getChildren()) {
                     Log.e("KEY", uid.getKey());
                     messages_reference=FirebaseDatabase.getInstance().getReference("messages").child(uid.getKey()).child("msg");
+                    ratings_reference=FirebaseDatabase.getInstance().getReference("messages").child(uid.getKey()).child("rating");
                     final MessageThread messageThread = new MessageThread();
                     if(uid.child("members").child("sender").getValue().toString().equals(user.getEmail())){
                         Log.e("RECEIVER EMAIL:",uid.child("members").child("receiver").getValue().toString());
@@ -59,11 +71,10 @@ public class OldChatsActivity extends AppCompatActivity {
                                    last_message=msg.getValue().toString();
 
                                }
-                               Log.e("MESSAGE: ",last_message);
-                               messageThread.setMessage(last_message);
-                               messageThread.setCount("0");
-                               emails.add(messageThread);
-                               lv.setAdapter(new CustomListAdapter(OldChatsActivity.this, emails));
+
+
+
+
                            }
 
                            @Override
@@ -71,6 +82,46 @@ public class OldChatsActivity extends AppCompatActivity {
 
                            }
                        });
+                        ratings_reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            float rating=0;
+                            float i=0;
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for(DataSnapshot rating_snapshot: dataSnapshot.getChildren()) {
+                                    rating += Float.parseFloat(rating_snapshot.getValue().toString());
+                                    i++;
+                                    Log.e("CC: ", rating_snapshot.getValue().toString());
+                                }
+                                Log.e("MESSAGE: ",last_message);
+                                messageThread.setMessage(last_message);
+                                messageThread.setCount((rating/i)+"");
+                                messageThread.setRating(rating/i);
+                                Log.e("RATINGS: ",messageThread.getRating()+"");
+                                emails.add(messageThread);
+                                for(int j=0;j<emails.size();j++)
+                                {
+                                    for(int k=j+1;k<emails.size();k++)
+                                    {
+                                        if(emails.get(j).getRating()<emails.get(k).getRating())
+                                        {
+                                            MessageThread temp = new MessageThread();
+                                            temp=emails.get(j);
+                                            emails.set(j,emails.get(k));
+                                            emails.set(k,temp);
+
+
+                                        }
+                                    }
+                                }
+                                lv.setAdapter(new CustomListAdapter(OldChatsActivity.this, emails));
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
 
                        // emails.add(uid.child("members").child("receiver").getValue().toString());
                     }
@@ -85,11 +136,10 @@ public class OldChatsActivity extends AppCompatActivity {
                                     last_message=msg.getValue().toString();
 
                                 }
-                                Log.e("MESSAGE: ",last_message);
-                                messageThread.setMessage(last_message);
-                                messageThread.setCount("0");
-                                emails.add(messageThread);
-                                lv.setAdapter(new CustomListAdapter(OldChatsActivity.this, emails));
+
+
+
+
                             }
 
                             @Override
@@ -97,7 +147,48 @@ public class OldChatsActivity extends AppCompatActivity {
 
                             }
                         });
-                       ;
+                        ratings_reference.addListenerForSingleValueEvent(new ValueEventListener() {
+                            float rating=0;
+                            float i=0;
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                for(DataSnapshot rating_snapshot: dataSnapshot.getChildren()) {
+                                    rating += Float.parseFloat(rating_snapshot.getValue().toString());
+                                    i++;
+                                    Log.e("CC: ", rating_snapshot.getValue().toString());
+                                }
+                                Log.e("MESSAGE: ",last_message);
+                                messageThread.setMessage(last_message);
+                                messageThread.setCount((rating/i)+"");
+                                messageThread.setRating(rating/i);
+                                Log.e("RATINGS: ",messageThread.getRating()+"");
+                                emails.add(messageThread);
+                                for(int j=0;j<emails.size();j++)
+                                {
+                                    for(int k=j+1;k<emails.size();k++)
+                                    {
+                                        if(emails.get(j).getRating()<emails.get(k).getRating())
+                                        {
+                                            MessageThread temp = new MessageThread();
+                                            temp=emails.get(j);
+                                            emails.set(j,emails.get(k));
+                                            emails.set(k,temp);
+
+
+                                        }
+                                    }
+                                }
+                                lv.setAdapter(new CustomListAdapter(OldChatsActivity.this, emails));
+
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                            }
+                        });
+
+                        ;
                        // emails.add(uid.child("members").child("sender").getValue().toString());
                     }
                 }

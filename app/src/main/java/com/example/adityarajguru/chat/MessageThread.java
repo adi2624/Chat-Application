@@ -4,9 +4,18 @@ public class MessageThread {
     private String receiver;
     private String message;
     private String count;
+    private float rating;
     public String getMessage() {
 
         return message;
+    }
+    public float getRating()
+    {
+        return rating;
+    }
+    public void setRating(float rating_input)
+    {
+        rating=rating_input;
     }
     public void setMessage(String message_input)
     {
